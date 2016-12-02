@@ -1,0 +1,161 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--Created:cb85b80c-f585-40ff-8bfc-12ff4d0e34a9-->
+<OfficeApp
+  xmlns="http://schemas.microsoft.com/office/appforoffice/1.1"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xmlns:bt="http://schemas.microsoft.com/office/officeappbasictypes/1.0"
+  xmlns:mailappor="http://schemas.microsoft.com/office/mailappversionoverrides/1.0"
+  xsi:type="MailApp">
+  <Id>7164e750-dc86-49c0-b548-1bac57abdc7c</Id>
+  <Version>1.0.0.1</Version>
+  <ProviderName>Microsoft Outlook Dev Center</ProviderName>
+  <DefaultLocale>en-US</DefaultLocale>
+  <DisplayName DefaultValue="Blockchain verifier" />
+  <Description DefaultValue="Adds blockchain verification to Outlook"/>
+  <IconUrl DefaultValue="https://localhost:8443/images/blue-64.png" />
+  <HighResolutionIconUrl DefaultValue="https://localhost:8443/images/blue-80.png" />
+  <Hosts>
+    <Host Name="Mailbox" />
+  </Hosts>
+  <Requirements>
+    <Sets>
+      <Set Name="MailBox" MinVersion="1.1" />
+    </Sets>
+  </Requirements>
+  <!-- These elements support older clients that don't support add-in commands -->
+  <FormSettings>
+    <Form xsi:type="ItemRead">
+      <DesktopSettings>
+        <!-- NOTE: Just reusing the read taskpane page that is invoked by the button
+             on the ribbon in clients that support add-in commands. You can 
+             use a completely different page if desired -->
+        <SourceLocation DefaultValue="https://localhost:8443/AppRead/TaskPane/TaskPane.html"/>
+        <RequestedHeight>450</RequestedHeight>
+      </DesktopSettings>
+    </Form>
+    <Form xsi:type="ItemEdit">
+      <DesktopSettings>
+        <SourceLocation DefaultValue="https://localhost:8443/AppCompose/Home/Home.html"/>
+      </DesktopSettings>
+    </Form>
+  </FormSettings>
+  <Permissions>ReadWriteItem</Permissions>
+  <Rule xsi:type="RuleCollection" Mode="Or">
+    <Rule xsi:type="ItemIs" ItemType="Message" FormType="Edit" />
+    <Rule xsi:type="ItemIs" ItemType="Appointment" FormType="Edit" />
+    <Rule xsi:type="ItemIs" ItemType="Message" FormType="Read" />
+    <Rule xsi:type="ItemIs" ItemType="Appointment" FormType="Read" />
+  </Rule>
+  <DisableEntityHighlighting>false</DisableEntityHighlighting>
+
+  <VersionOverrides xmlns="http://schemas.microsoft.com/office/mailappversionoverrides" xsi:type="VersionOverridesV1_0">
+
+    <Requirements>
+      <bt:Sets DefaultMinVersion="1.3">
+        <bt:Set Name="Mailbox" />
+      </bt:Sets>
+    </Requirements>
+    <Hosts>
+      <Host xsi:type="MailHost">
+
+        <DesktopFormFactor>
+          <FunctionFile resid="functionFile" />
+          
+         
+          
+          <!-- Message read form -->
+          <ExtensionPoint xsi:type="MessageReadCommandSurface">
+            <OfficeTab id="TabDefault">
+              <Group id="msgReadDemoGroup">
+                <Label resid="groupLabel" />
+                <!-- Function (UI-less) button -->
+                <Control xsi:type="Button" id="msgReadFunctionButton">
+                  <Label resid="funcReadButtonLabel" />
+                  <Supertip>
+                    <Title resid="funcReadSuperTipTitle" />
+                    <Description resid="funcReadSuperTipDescription" />
+                  </Supertip>
+                  <Icon>
+                    <bt:Image size="16" resid="blue-icon-16" />
+                    <bt:Image size="32" resid="blue-icon-32" />
+                    <bt:Image size="80" resid="blue-icon-80" />
+                  </Icon>
+                  <Action xsi:type="ExecuteFunction">
+                    <FunctionName>getSubject</FunctionName>
+                  </Action>
+                </Control>
+               <!--     Task pane button -->
+                <Control xsi:type="Button" id="msgReadOpenPaneButton">
+                  <Label resid="paneReadButtonLabel" />
+                  <Supertip>
+                    <Title resid="paneReadSuperTipTitle" />
+                    <Description resid="paneReadSuperTipDescription" />
+                  </Supertip>
+                  <Icon>
+                    <bt:Image size="16" resid="green-icon-16" />
+                    <bt:Image size="32" resid="green-icon-32" />
+                    <bt:Image size="80" resid="green-icon-80" />
+                  </Icon>
+                  <Action xsi:type="ShowTaskpane">
+                    <SourceLocation resid="readTaskPaneUrl" />
+                  </Action>
+                </Control>
+              </Group>
+            </OfficeTab>
+          </ExtensionPoint>
+          
+         
+
+        </DesktopFormFactor>
+      </Host>
+    </Hosts>
+
+    <Resources>
+      <bt:Images>
+        <!-- Blue icon -->
+        <bt:Image id="blue-icon-16" DefaultValue="https://localhost:8443/images/blue-16.png"/>
+        <bt:Image id="blue-icon-32" DefaultValue="https://localhost:8443/images/blue-32.png"/>
+        <bt:Image id="blue-icon-80" DefaultValue="https://localhost:8443/images/blue-80.png"/>
+        <!-- Red icon -->
+        <bt:Image id="red-icon-16" DefaultValue="https://localhost:8443/images/red-16.png"/>
+        <bt:Image id="red-icon-32" DefaultValue="https://localhost:8443/images/red-32.png"/>
+        <bt:Image id="red-icon-80" DefaultValue="https://localhost:8443/images/red-80.png"/>
+        <!-- Green icon -->
+        <bt:Image id="green-icon-16" DefaultValue="https://localhost:8443/images/green-16.png"/>
+        <bt:Image id="green-icon-32" DefaultValue="https://localhost:8443/images/green-32.png"/>
+        <bt:Image id="green-icon-80" DefaultValue="https://localhost:8443/images/green-80.png"/>
+      </bt:Images>
+      <bt:Urls>
+        <bt:Url id="functionFile" DefaultValue="https://localhost:8443/FunctionFile/Functions.html"/>
+        <bt:Url id="readTaskPaneUrl" DefaultValue="https://localhost:8443/AppRead/TaskPane/TaskPane.html"/>
+        <bt:Url id="composeTaskPaneUrl" DefaultValue="https://localhost:8443/AppCompose/TaskPane/TaskPane.html"/>
+      </bt:Urls>
+      <bt:ShortStrings>
+        <bt:String id="groupLabel" DefaultValue="Blockchain"/>
+       
+
+        <!-- Read mode -->
+        <bt:String id="funcReadButtonLabel" DefaultValue="Verify Document"/>
+        <bt:String id="paneReadButtonLabel" DefaultValue="Create Certificate"/>
+
+        <bt:String id="funcReadSuperTipTitle" DefaultValue="Verifies the document against the certificate"/>
+        <bt:String id="paneReadSuperTipTitle" DefaultValue="Creates the Blockchain certificate and embeds it in the email"/>
+        
+        <bt:String id="menuItem1ReadLabel" DefaultValue="Get item class"/>
+       
+        <bt:String id="menuItem3ReadLabel" DefaultValue="Get item ID"/>
+      </bt:ShortStrings>
+      <bt:LongStrings>
+        
+        <!-- Read mode -->
+        <bt:String id="funcReadSuperTipDescription" DefaultValue="Check the Document against the certificate"/>
+        
+        <bt:String id="paneReadSuperTipDescription" DefaultValue="Create the blockchain certificate"/>
+        
+        <bt:String id="menuItem1ReadTip" DefaultValue="Gets the item class of the message or appointment and displays it in the info bar." />
+        
+        <bt:String id="menuItem3ReadTip" DefaultValue="Gets the item ID of the message or appointment and displays it in the info bar." />
+      </bt:LongStrings>
+    </Resources>
+  </VersionOverrides>
+</OfficeApp>
