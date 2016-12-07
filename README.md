@@ -1,7 +1,7 @@
 <<<<<<< HEAD
-# Add-in Command Demo Outlook Add-in for block chain
+# Outlook Add-in for block chain
 
-The Add-in Command Demo add-in uses the commands model for Outlook add-ins to add buttons to the ribbon.
+The Outlook Add-in for blockchain creates an outlook add in to create and validate emails on the blockchain using stampery.
 
 ## Prerequsites
 
