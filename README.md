@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # Add-in Command Demo Outlook Add-in
 
 The Add-in Command Demo add-in uses the commands model for Outlook add-ins to add buttons to the ribbon.
@@ -243,3 +244,7 @@ Copyright (c) 2015 Microsoft. All rights reserved.
 Connect with me on Twitter [@JasonJohMSFT](https://twitter.com/JasonJohMSFT)
 
 Follow the [Outlook Dev Blog](http://blogs.msdn.com/b/exchangedev/)
+=======
+# officeblock
+Office Blockchain add in
+>>>>>>> 1e52e8911be27856414084185d8d9930b7150d2a
