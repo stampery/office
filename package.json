@@ -9,7 +9,4 @@
     "minimist": "^1.2.0",
     "xmllint": "git+https://github.com/kripken/xml.js.git"
   },
-  "dependencies": {
-    "stampery": "^3.5.0"
-  }
 }
