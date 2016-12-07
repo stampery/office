@@ -74,7 +74,7 @@
                     <bt:Image size="80" resid="blue-icon-80" />
                   </Icon>
                   <Action xsi:type="ExecuteFunction">
-                    <FunctionName>getSubject</FunctionName>
+                    <FunctionName>verify</FunctionName>
                   </Action>
                 </Control>
                <!--     Task pane button -->
