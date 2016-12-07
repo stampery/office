@@ -1,7 +1,6 @@
-<<<<<<< HEAD
-# Outlook Add-in for block chain
+# Outlook Add-in for Blockchain
 
-The Outlook Add-in for blockchain creates an outlook add in to create and validate emails on the blockchain using stampery.
+This Outlook add in for blockchain creates and outlook add in to certify and validate emails on the blockchain using https://stampery.com/
 
 ## Prerequsites
 
@@ -44,23 +43,16 @@ In order to run this sample, you will need the following:
 1. Open Outlook 2016 and connect to the email account where you installed the add-in.
 1. Open an existing message (either in the reading pane or in a separate window). Notice that the add-in has placed new buttons on the command ribbon.
   
-  ![The addin buttons on a read mail form in Outlook](https://raw.githubusercontent.com/jasonjoh/command-demo/master/readme-images/read-mail.PNG)
   
-1. Create a new email. Notice that the add-in has placed new buttons on the command ribbon.
-
-  ![The addin buttons on a new mail form in Outlook](https://raw.githubusercontent.com/jasonjoh/command-demo/master/readme-images/new-mail.PNG)
 
 ## Key components of the sample
 
 - [```command-demo-manifest.xml```](command-demo-manifest.xml): The manifest file for the add-in.
 - [```FunctionFile/Functions.html```](FunctionFile/Functions.html): An empty HTML file to load `Functions.js` for clients that support add-in commands.
 - [```FunctionFile/Functions.js```](FunctionFile/Functions.js): The code that is invoked when the add-in command buttons are clicked.
-- [```AppCompose/TaskPane/TaskPane.html```](AppCompose/TaskPane/TaskPane.html): The HTML markup for the task pane UI displayed by the **Insert custom message** button.
-- [```AppCompose/TaskPane/TaskPane.js```](AppCompose/TaskPane/TaskPane.js): Code used by the task pane UI displayed by the **Insert custom message** button.
 - [```AppRead/TaskPane/TaskPane.html```](AppRead/TaskPane/TaskPane.html): The HTML markup for the task pane UI displayed by the **Display all properties** button. This is also displayed by clients in read mode that do not support add-in commands.
 - [```AppRead/TaskPane/TaskPane.js```](AppRead/TaskPane/TaskPane.js): Code used by the task pane UI displayed by the **Display all properties** button.
-- [```AppCompose/Home/Home.html```](AppCompose/Home/Home.html): The HTML file that is loaded and displayed by clients in compose mode that do not support add-in commands.
-- [```AppCompose/Home/Home.js```](AppCompose/Home/Home.js): The code that is invoked by clients in compose mode that do not support add-in commands.
+- 
 
 ## How's it all work?
 
@@ -96,22 +88,8 @@ The URL to the HTML file with all of the JavaScript code for the button is speci
 <FunctionFile resid="functionFile" />
 ```
 
-The manifest specifies all four available extension points:
 
-```xml
-<!-- Message compose form -->
-<ExtensionPoint xsi:type="MessageComposeCommandSurface">
-<!-- Appointment compose form -->
-<ExtensionPoint xsi:type="AppointmentOrganizerCommandSurface">
-<!-- Message read form -->
-<ExtensionPoint xsi:type="MessageReadCommandSurface">
-<!-- Appointment read form -->
-<ExtensionPoint xsi:type="AppointmentAttendeeCommandSurface">
-```
-    
-Within each extension point, there is an example of each type of button.
-
-### A button that executes a function ###
+### A button that executes the verification ###
 
 This is created by setting the `xsi:type` attribute of a `Control` element to `Button`, and adding an `Action` child element with an `xsi:type` attribute set to `ExecuteFunction`. For example, look at the **Insert default message** button:
 
@@ -134,74 +112,9 @@ This is created by setting the `xsi:type` attribute of a `Control` element to `B
 </Control>
 ```
     
-### A drop-down menu button ###
 
-This is created by setting the `xsi:type` attribute of a `Control` element to `Menu`, and adding an `Items` child element that contains the items to appear on the menu. For example, look at the **Insert message** button:
-
-```xml
-<!-- Menu (dropdown) button -->
-<Control xsi:type="Menu" id="msgComposeMenuButton">
-  <Label resid="menuComposeButtonLabel" />
-  <Supertip>
-    <Title resid="menuComposeSuperTipTitle" />
-    <Description resid="menuComposeSuperTipDescription" />
-  </Supertip>
-  <Icon>
-    <bt:Image size="16" resid="red-icon-16" />
-    <bt:Image size="32" resid="red-icon-32" />
-    <bt:Image size="80" resid="red-icon-80" />
-  </Icon>
-  <Items>
-    <Item id="msgComposeMenuItem1">
-      <Label resid="menuItem1ComposeLabel" />
-      <Supertip>
-        <Title resid="menuItem1ComposeLabel" />
-        <Description resid="menuItem1ComposeTip" />
-      </Supertip>
-      <Icon>
-        <bt:Image size="16" resid="red-icon-16" />
-        <bt:Image size="32" resid="red-icon-32" />
-        <bt:Image size="80" resid="red-icon-80" />
-      </Icon>
-      <Action xsi:type="ExecuteFunction">
-        <FunctionName>addMsg1ToBody</FunctionName>
-      </Action>
-    </Item>
-    <Item id="msgComposeMenuItem2">
-      <Label resid="menuItem2ComposeLabel" />
-      <Supertip>
-        <Title resid="menuItem2ComposeLabel" />
-        <Description resid="menuItem2ComposeTip" />
-      </Supertip>
-      <Icon>
-        <bt:Image size="16" resid="red-icon-16" />
-        <bt:Image size="32" resid="red-icon-32" />
-        <bt:Image size="80" resid="red-icon-80" />
-      </Icon>
-      <Action xsi:type="ExecuteFunction">
-        <FunctionName>addMsg2ToBody</FunctionName>
-      </Action>
-    </Item>
-    <Item id="msgComposeMenuItem3">
-      <Label resid="menuItem3ComposeLabel" />
-      <Supertip>
-        <Title resid="menuItem3ComposeLabel" />
-        <Description resid="menuItem3ComposeTip" />
-      </Supertip>
-      <Icon>
-        <bt:Image size="16" resid="red-icon-16" />
-        <bt:Image size="32" resid="red-icon-32" />
-        <bt:Image size="80" resid="red-icon-80" />
-      </Icon>
-      <Action xsi:type="ExecuteFunction">
-        <FunctionName>addMsg3ToBody</FunctionName>
-      </Action>
-    </Item>
-  </Items>
-</Control>
-```
     
-### A button that opens a task pane ###
+### A button that creates and displays the Certificate ###
 
 This is created by setting the `xsi:type` attribute of a `Control` element to `Button`, and adding an `Action` child element with an `xsi:type` attribute set to `ShowTaskPane`. For example, look at the **Insert custom message** button:
 
@@ -226,7 +139,7 @@ This is created by setting the `xsi:type` attribute of a `Control` element to `B
 
 ## Questions and comments
 
-- If you have any trouble running this sample, please [log an issue](https://github.com/jasonjoh/command-demo/issues).
+- If you have any trouble running this sample, please [log an issue](https://github.com/hdsw/officeblock/issues).
 - Questions about Office Add-in development in general should be posted to [Stack Overflow](http://stackoverflow.com/questions/tagged/office-addins). Make sure that your questions or comments are tagged with `office-addins`.
 
 ## Additional resources
@@ -241,10 +154,5 @@ Copyright (c) 2015 Microsoft. All rights reserved.
 
 
 ----------
-Connect with me on Twitter [@JasonJohMSFT](https://twitter.com/JasonJohMSFT)
 
 Follow the [Outlook Dev Blog](http://blogs.msdn.com/b/exchangedev/)
-=======
-# officeblock
-Office Blockchain add in
->>>>>>> 1e52e8911be27856414084185d8d9930b7150d2a
