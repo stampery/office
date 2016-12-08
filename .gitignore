@@ -47,3 +47,5 @@ bower_components
 # Yarn Integrity file
 .yarn-integrity
 
+# Dist build
+dist

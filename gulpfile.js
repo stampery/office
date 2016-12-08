@@ -9,6 +9,7 @@ var minimist = require('minimist');
 var xmllint = require('xmllint');
 var chalk = require('chalk');
 var $ = require('gulp-load-plugins')({ lazy: true });
+var cleanCSS = require('gulp-clean-css');
 var del = require('del');
 var runSequence = require('run-sequence');
 var Xml2Js = require('xml2js');
@@ -229,7 +230,7 @@ gulp.task('dist-minify-css', function () {
         './app*/**/*.css',
         './content/**/*.css'
     ], { base: './' })
-        .pipe($.minifyCss())
+        .pipe(cleanCSS())
         .pipe(gulp.dest(config.release));
 });
 
