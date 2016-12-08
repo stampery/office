@@ -1,9 +1,9 @@
 'use script';
 
 var gulp = require('gulp');
-var replace=require('gulp-replace');
+var nodemon = require('gulp-nodemon');
+var replace = require('gulp-replace');
 var argv = require('yargs').argv;
-var webserver = require('gulp-webserver');
 var fs = require('fs');
 var minimist = require('minimist');
 var xmllint = require('xmllint');
@@ -33,7 +33,7 @@ function fileExists(filePath) {
 }
 
 gulp.task('help', $.taskListing.withFilters(function (task) {
-    var mainTasks = ['default', 'help', 'serve-static', 'validate', 'dist'];
+    var mainTasks = ['default', 'help', 'server', 'validate', 'dist'];
     var isSubTask = mainTasks.indexOf(task) < 0;
     return isSubTask;
 }));
@@ -42,17 +42,18 @@ gulp.task('default', ['help']);
 /** +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+ **/
 
 /**
- * Startup static webserver.
+ * Server startup script.
  */
-gulp.task('serve-static', function () {
-    gulp.src('.')
-        .pipe(webserver({
-            https: true,
-            port: '8443',
-            host: 'localhost',
-            directoryListing: true,
-            fallback: 'index.html'
-        }));
+gulp.task('server', function (cb) {
+  var called = false;
+  return nodemon({
+
+    // nodemon our expressjs server
+    script: 'server/index.js',
+
+    // watch core server file(s) that require server restart on change
+    watch: ['server/index.js']
+  });
 });
 
 /**

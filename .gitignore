@@ -47,5 +47,6 @@ bower_components
 # Yarn Integrity file
 .yarn-integrity
 
-# Dist build
+# Misc
 dist
+.vscode
