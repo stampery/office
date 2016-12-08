@@ -4,29 +4,25 @@
   // The Office initialize function must be run each time a new page is loaded
   Office.initialize = function(reason){
     jQuery(document).ready(function(){
-      app.initialize();
 
-      displayItemDetails();
+      if (OfficeHelpers.Authenticator.isAuthDialog()) {
+        return;
+      }
+
+      var authenticator = new OfficeHelpers.Authenticator();
+
+      // register Microsoft (Azure AD 2.0 Converged auth) endpoint using
+      authenticator.endpoints.registerMicrosoftAuth('17feb280-1df1-4b0d-8a77-54b3184207cc', {
+        redirectUrl: "https://localhost:8443/appread/home/home.html"
+      });
+
+      authenticator
+          .authenticate(OfficeHelpers.DefaultEndpoints.Microsoft)
+          .then(function (token) {
+            app.initialize();
+            jQuery('#token').text(token.access_token);
+          })
+          .catch(OfficeHelpers.Utilities.log);
     });
   };
-
-  // Displays the "Subject" and "From" fields, based on the current mail item
-  function displayItemDetails(){
-    var item = Office.cast.item.toItemRead(Office.context.mailbox.item);
-    jQuery('#subject').text(item.subject);
-
-    var from;
-    if (item.itemType === Office.MailboxEnums.ItemType.Message) {
-      from = Office.cast.item.toMessageRead(item).from;
-    } else if (item.itemType === Office.MailboxEnums.ItemType.Appointment) {
-      from = Office.cast.item.toAppointmentRead(item).organizer;
-    }
-
-    if (from) {
-      jQuery('#from').text(from.displayName);
-      jQuery('#from').click(function(){
-        app.showNotification(from.displayName, from.emailAddress);
-      });
-    }
-  }
 })();
