@@ -17,11 +17,11 @@ var serverCreated = function () {
 
 if (development) {
   server = https.createServer({
-    key: fs.readFileSync(process.env.SERVER_KEY_FILE),
-    cert: fs.readFileSync(process.env.SERVER_CERT_FILE)
+    key: fs.readFileSync(process.env.SERVER_KEY_FILE || 'server.key'),
+    cert: fs.readFileSync(process.env.SERVER_CERT_FILE || 'server.crt')
   }, app).listen(port, serverCreated);
 } else {
-  server = http.createServer({}, app).listen(port, serverCreated);
+  server = http.createServer(app).listen(port, serverCreated);
 }
 
 app.use('/', express.static(path.join(__dirname, '../')));
