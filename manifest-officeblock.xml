@@ -11,10 +11,6 @@
   <Hosts>
     <Host Name="Mailbox"/>
   </Hosts>
-  <AppDomains>
-    <AppDomain>https://login.windows.net</AppDomain>
-    <AppDomain>https://login.microsoftonline.com</AppDomain>
-  </AppDomains>
   <Requirements>
     <Sets>
       <Set Name="MailBox" MinVersion="1.1"/>
