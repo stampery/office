@@ -195,7 +195,6 @@ gulp.task('dist-remove', function () {
 gulp.task('dist-copy-files', function () {
     return gulp.src([
         './app*/**/*',
-        './bower_components/**/*',
         './content/**/*',
         './images/**/*',
         './scripts/**/*',
