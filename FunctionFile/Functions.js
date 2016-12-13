@@ -1,8 +1,166 @@
 // Copyright (c) Microsoft. All rights reserved. Licensed under the MIT license. 
 // See full license at the bottom of this file.
 
+var _mailbox = null;
+var _customProperties = null;
+var _initialized = false;
+var _queuedOperation = null;
+
+// The initialize function is required for all add-ins.
 Office.initialize = function () {
+  _mailbox = Office.context.mailbox;
+  _mailbox.item.loadCustomPropertiesAsync(function (result) {
+    if (result.status === Office.AsyncResultStatus.Failed) {
+      // Handle the failure.
+    }
+    else {
+      // Successfully loaded custom properties,
+      // can get them from the result argument.
+      _customProperties = result.value;
+      _initialized = true;
+      if (_queuedOperation) {
+        _queuedOperation[0](_queuedOperation[1]);
+      }
+    }
+  });
 };
+
+// If loaded outside of Office, mock the Office object for easier testing
+if (!Office.context) {
+  window.onload = function () {
+    window.Office = {};
+    Office.AsyncResultStatus = {
+      Succeeded: 0,
+      Failed: 1
+    };
+    Office.context = {
+      mailbox: {
+        item: {
+          body: {
+            getAsync: function (dummy, options, callback) {
+              callback({
+                status: Office.AsyncResultStatus.Succeeded,
+                value: 'Dummy mail body'
+              });
+            }
+          },
+          notificationMessages: {
+            replaceAsync: function (dummy, data, callback) {
+              document.getElementById('notification').innerHTML = data.message;
+              callback();
+            }
+          }
+        }
+      }
+    };
+    var _savedProperties = {};
+    _customProperties = {
+      set: function (name, value) {
+        _savedProperties[name] = value;
+      },
+      get: function (name) {
+        return _savedProperties[name];
+      },
+      saveAsync: function (callback) {
+        callback({
+          status: Office.AsyncResultStatus.Succeeded
+        });
+      }
+    };
+
+    window.dummyEvent = {
+      completed: function () {}
+    };
+    var testMarkup = '<button onclick="stamp(dummyEvent)">Stamp</button>';
+    testMarkup += '<button onclick="prove(dummyEvent)">Prove</button>';
+    testMarkup += '<div id="notification"></div>';
+    document.body.innerHTML = testMarkup;
+
+    _initialized = true;
+  };
+}
+
+function postHash(body, callback) {
+  var xhr = new XMLHttpRequest();
+  xhr.open('POST', '/api/stamp');
+  xhr.setRequestHeader('Content-Type', 'application/json');
+  xhr.onreadystatechange = function () {
+    if (xhr.readyState == 4 && xhr.status == 200) {
+      callback(JSON.parse(xhr.responseText));
+    }
+  };
+  xhr.send(JSON.stringify(body));
+}
+
+function getProof(hash, callback) {
+  var xhr = new XMLHttpRequest();
+  xhr.open('GET', '/api/proofs/' + hash);
+  xhr.onreadystatechange = function () {
+    if (xhr.readyState == 4 && xhr.status == 200) {
+      callback(JSON.parse(xhr.responseText));
+    }
+  };
+  xhr.send();
+}
+
+function stamp(event) {
+  if (!_initialized) {
+    _queuedOperation = [_stamp, event];
+  } else {
+    _stamp(event);
+  }
+}
+
+function _stamp(event) {
+  Office.context.mailbox.item.body.getAsync('text', {}, function (result) {
+    if (result.status === Office.AsyncResultStatus.Failed) {
+      // TODO: Handle error.
+      return;
+    }
+    var body = result.value;
+    console.log('Mail body: ' + body);
+    var hash = sha3_512(body);
+    postHash({ hash: hash }, function (response) {
+      _customProperties.set('stampery-hash', response.result);
+      _customProperties.saveAsync(function (result) {
+        if (result.status === Office.AsyncResultStatus.Failed) {
+          // TODO: Handle the failure.
+        } else {
+          showMessage('Successfully stamped', 'icon-16', event);
+        }
+      });
+    });
+  });
+}
+
+function prove(event) {
+  if (!_initialized) {
+    _queuedOperation = [_prove, event];
+  } else {
+    _prove(event);
+  }
+}
+
+function _prove(event) {
+  var hash = _customProperties.get('stampery-hash');
+  if (!hash) {
+    showMessage('No UUID found from properties!', 'icon-16', event);
+    return;
+  }
+  getProof(hash, function (response) {
+    if (response.error) {
+      // TODO: Handle error.
+      return;
+    }
+    var result = response.result;
+    if (!result.eth && !result.btc) {
+      showMessage('Still working on it..', 'icon-16', event);
+    } else {
+      showMessage('Transaction found', 'icon-16', event);
+      // TODO: Do local verification
+    }
+  });
+}
 
 function showMessage(message, icon, event) {
   Office.context.mailbox.item.notificationMessages.replaceAsync('msg', {
@@ -10,88 +168,25 @@ function showMessage(message, icon, event) {
     icon: icon,
     message: message,
     persistent: false
-  }, function(result){
+  }, function (result) {
     event.completed();
   });
 }
 
-
-function setSubject(event){
-  Office.context.mailbox.item.subject.setAsync('Hello world!', function(result) {
-    if (result.status === Office.AsyncResultStatus.Failed) {
-      Office.context.mailbox.item.notificationMessages.addAsync('setSubjectError', {
-        type: 'errorMessage',
-        message: 'Failed to set subject: ' + result.error
-      });
-      
-      event.completed();
-    }
-    else {
-      showMessage('Subject set', 'icon-16', event);
-    }
-  });
-
+function setSubject(event) {
+  prove(event);
 }
 
-function getSubject(event){
-  Office.context.mailbox.item.subject.getAsync(function(result){
-    if (result.status === Office.AsyncResultStatus.Failed) {
-      Office.context.mailbox.item.notificationMessages.addAsync('getSubjectError', {
-        type: 'errorMessage',
-        message: 'Failed to get subject: ' + result.error
-      });
-      
-      event.completed();
-    }
-    else {
-      showMessage('The current subject is: ' + result.value, 'icon-16', event);
-    }
-  });
+function getSubject(event) {
+  stamp(event);
 }
-
-function addToRecipients(event){
-  var item = Office.context.mailbox.item;
-  var addressToAdd = {
-    displayName: Office.context.mailbox.userProfile.displayName,
-    emailAddress: Office.context.mailbox.userProfile.emailAddress
-  };
-
-  if (item.itemType === Office.MailboxEnums.ItemType.Message) {
-    item.to.addAsync([addressToAdd], { asyncContext: event }, addRecipCallback);
-  } else if (item.itemType === Office.MailboxEnums.ItemType.Appointment) {
-    item.requiredAttendees.addAsync([addressToAdd], { asyncContext: event }, addRecipCallback);
-  }
-}
-
-function addRecipCallback(result) {
-  var event = result.asyncContext;
-  if (result.status === Office.AsyncResultStatus.Failed) {
-    Office.context.mailbox.item.notificationMessages.addAsync('addRecipError', {
-      type: 'errorMessage',
-      message: 'Failed to add recipient: ' + result.error
-    });
-    
-    event.completed();
-  }
-  else {
-    showMessage('Recipient added', 'icon-16', event);
-  }
-}
-
-
-
-// This is the function executed by uilessButton1
-function buttonFunction1(event) {
-  showMessage('uilessButton1 clicked!', 'uilessButtonIcon1-16', event);
-}
-
 
 /*
   MIT License:
 
   Permission is hereby granted, free of charge, to any person obtaining
   a copy of this software and associated documentation files (the
-  "Software"), to deal in the Software without restriction, including
+  'Software'), to deal in the Software without restriction, including
   without limitation the rights to use, copy, modify, merge, publish,
   distribute, sublicense, and/or sell copies of the Software, and to
   permit persons to whom the Software is furnished to do so, subject to
@@ -100,7 +195,7 @@ function buttonFunction1(event) {
   The above copyright notice and this permission notice shall be
   included in all copies or substantial portions of the Software.
 
-  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+  THE SOFTWARE IS PROVIDED 'AS IS', WITHOUT WARRANTY OF ANY KIND,
   EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
   MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
   NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE
