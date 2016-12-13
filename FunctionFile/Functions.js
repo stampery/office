@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft. All rights reserved. Licensed under the MIT license. 
+// Copyright (c) Microsoft. All rights reserved. Licensed under the MIT license.
 // See full license at the bottom of this file.
 
 var _mailbox = null;
@@ -119,7 +119,7 @@ function _stamp(event) {
     }
     var body = result.value;
     console.log('Mail body: ' + body);
-    var hash = sha3_512(body);
+    var hash = sha3_512(body + Math.random());
     postHash({ hash: hash }, function (response) {
       _customProperties.set('stampery-hash', response.result);
       _customProperties.saveAsync(function (result) {
@@ -153,13 +153,33 @@ function _prove(event) {
       return;
     }
     var result = response.result;
-    if (!result.eth && !result.btc) {
-      showMessage('Still working on it..', 'icon-16', event);
+    proof = result.btc || result.eth;
+    if (proof) {
+      // showMessage('Transaction found', 'icon-16', event);
+      checkSiblings(hash, proof.siblings, proof.root, function (validity) {
+          showMessage('Valid: ' + validity, 'icon-16', event);
+      });
     } else {
-      showMessage('Transaction found', 'icon-16', event);
-      // TODO: Do local verification
+      showMessage('Still working on it..', 'icon-16', event);
     }
   });
+}
+
+function checkSiblings(hash, siblings, root, cb) {
+  if (siblings.length > 0) {
+    head = siblings.slice(-1);
+    tail = siblings.slice(0, -1);
+    hash = merkleMixer(hash, head);
+    checkSiblings(hash, tail, root, cb);
+  } else {
+    cb(hash == root);
+  }
+}
+
+function merkleMixer(a, b) {
+    var commuted = a > b && a + b || b + a;
+    var hash = keccak_512(commuted).toUpperCase();
+    return hash;
 }
 
 function showMessage(message, icon, event) {
