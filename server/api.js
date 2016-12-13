@@ -38,14 +38,14 @@ stampery.on('ready', function () {
   });
 });
 
-router.use(bodyParser.urlencoded({extended: true}));
+router.use(bodyParser.json());
 
 router.post('/stamp', function (req, res) {
   var hash = req.body.hash;
 
   // Throw error 400 if no hash
   if (!hash)
-    return res.status(400).send('No Hash Specified');
+    return res.status(400).send({error: 'No Hash Specified'});
 
   // Transform hash to upper case (Stampery backend preferes them this way)
   hash = hash.toUpperCase()
@@ -53,15 +53,15 @@ router.post('/stamp', function (req, res) {
   // Throw error 422 if hash is malformed
   var re = /^[A-F0-9]{128}$/;
   if (!(re.test(hash)))
-    return res.status(422).send('Malformed Hash');
+    return res.status(422).send({error: 'Malformed Hash'});
 
   // Perform actual stamping and return success or error
   if (stampery.stamp(hash)) {
     // Create an entry for hash in proofsDict
     proofsDict[hash] = {eth: null, btc: null};
-    res.send(hash);
+    res.send({result: hash, error: null});
   }  else {
-    res.status(503).send('Stamping Failed');
+    res.status(503).send({error: 'Stamping Failed'});
   }
 });
 
@@ -70,16 +70,16 @@ router.get('/proofs/:hash', function (req, res) {
 
   // Check if stamp exists
   if (!(hash in proofsDict))
-    return res.status(404).send('Stamp Not Found');
+    return res.status(404).send({error: 'Stamp Not Found'});
 
   var proofs = proofsDict[hash];
 
-  res.send(proofs);
+  res.send({result: proofs, error: null});
 });
 
 router.get('/ping', function (req, res) {
   stampery.hash('ping', function (hash) {
-    res.send(hash);
+    res.send({result: hash});
   });
 });
 
