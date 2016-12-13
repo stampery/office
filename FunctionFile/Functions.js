@@ -11,7 +11,7 @@ Office.initialize = function () {
   _mailbox = Office.context.mailbox;
   _mailbox.item.loadCustomPropertiesAsync(function (result) {
     if (result.status === Office.AsyncResultStatus.Failed) {
-      // Handle the failure.
+      showMessage(result.error);
     }
     else {
       // Successfully loaded custom properties,
@@ -114,7 +114,7 @@ function stamp(event) {
 function _stamp(event) {
   Office.context.mailbox.item.body.getAsync('text', {}, function (result) {
     if (result.status === Office.AsyncResultStatus.Failed) {
-      // TODO: Handle error.
+      showMessage(result.error);
       return;
     }
     var body = result.value;
@@ -124,9 +124,9 @@ function _stamp(event) {
       _customProperties.set('stampery-hash', response.result);
       _customProperties.saveAsync(function (result) {
         if (result.status === Office.AsyncResultStatus.Failed) {
-          // TODO: Handle the failure.
+          showMessage(result.error);
         } else {
-          showMessage('Successfully stamped', 'icon-16', event);
+          showMessage('Successfully stamped', event);
         }
       });
     });
@@ -144,23 +144,22 @@ function prove(event) {
 function _prove(event) {
   var hash = _customProperties.get('stampery-hash');
   if (!hash) {
-    showMessage('No UUID found from properties!', 'icon-16', event);
+    showMessage('No UUID found from properties!', event);
     return;
   }
   getProof(hash, function (response) {
     if (response.error) {
-      // TODO: Handle error.
+      showMessage(response.error);
       return;
     }
     var result = response.result;
     proof = result.btc || result.eth;
     if (proof) {
-      // showMessage('Transaction found', 'icon-16', event);
       checkSiblings(hash, proof.siblings, proof.root, function (validity) {
-          showMessage('Valid: ' + validity, 'icon-16', event);
+          showMessage('Valid: ' + validity, event);
       });
     } else {
-      showMessage('Still working on it..', 'icon-16', event);
+      showMessage('Still working on it..', event);
     }
   });
 }
@@ -182,14 +181,16 @@ function merkleMixer(a, b) {
     return hash;
 }
 
-function showMessage(message, icon, event) {
+function showMessage(message, event) {
   Office.context.mailbox.item.notificationMessages.replaceAsync('msg', {
     type: 'informationalMessage',
-    icon: icon,
+    icon: 'icon-16',
     message: message,
     persistent: false
   }, function (result) {
-    event.completed();
+    if (event) {
+      event.completed();
+    }
   });
 }
 
