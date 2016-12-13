@@ -26,7 +26,7 @@ Office.initialize = function () {
 };
 
 // If loaded outside of Office, mock the Office object for easier testing
-if (!Office.context) {
+if (window.self === window.top) {
   window.onload = function () {
     window.Office = {};
     Office.AsyncResultStatus = {
