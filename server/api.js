@@ -25,11 +25,41 @@ stampery.on('proof', function (hash, proof) {
   stampery.prove(hash, proof, function (valid) {
     console.log('Proof validity:', valid);
   });
-  var prev_proof = proofsDict[hash];
-  if (!prev_proof)
-    prev_proof = {eth: null, btc: null};
 
-  prev_proof[[null, 'btc', 'eth'][Math.abs(proof.anchor.chain)]] = proof;
+  // -2: ETH TEST, -1: BTC TEST, 1: BTC LIVE, 2: ETH CLASSIC
+  var chain = Math.abs(proof.anchor.chain);
+
+  switch (chain) {
+    case 2: // ETH
+      // Store the Ethereum proof and remember the root for stitching the bitcoin proof when it arrives
+      proofsDict[hash] = {eth: proof, btc: null};
+      if (!(proofsDict['r'+proof.root] instanceof Array))
+        proofsDict['r'+proof.root] = []
+      proofsDict['r'+proof.root].push(hash);
+      console.log(proofsDict['r'+proof.root]);
+      break;
+    case 1: // BTC
+      // Recover the Ethereum proof, stitch both proofs and forget about the root
+      var prev_hashes  = proofsDict['r'+hash];
+      if (!prev_hashes)
+        break;
+
+      prev_hashes.forEach(function (h) {
+        console.log('Extending proof for hash', h);
+        if (proofsDict[h] && 'btc' in proofsDict[h]) {
+          var eth = proofsDict[h].eth;
+          // Sad way to copy objects until Object.assign() is supported by IE
+          var btc_proof = JSON.parse(JSON.stringify(proof));
+          btc_proof.hash = eth.hash;
+          btc_proof.siblings = btc_proof.siblings.concat(eth.siblings);
+          proofsDict[h].btc = btc_proof;
+        }
+      });
+      delete proofsDict['r'+hash];
+      break;
+    default:
+      console.log('Received proof for unknown chain');
+  }
 });
 
 stampery.on('ready', function () {

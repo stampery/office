@@ -119,7 +119,7 @@ function _stamp(event) {
     }
     var body = result.value;
     console.log('Mail body: ' + body);
-    var hash = sha3_512(body + Math.random());
+    var hash = keccak_512(body);
     postHash({ hash: hash }, function (response) {
       _customProperties.set('stampery-hash', response.result);
       _customProperties.saveAsync(function (result) {
