@@ -4,8 +4,8 @@
   <Version>1.0.0.0</Version>
   <ProviderName>[Provider name]</ProviderName>
   <DefaultLocale>en-US</DefaultLocale>
-  <DisplayName DefaultValue="officeblock"/>
-  <Description DefaultValue="[Outlook Add-in description]"/>
+  <DisplayName DefaultValue="Stampery add-in"/>
+  <Description DefaultValue="Stampery add-in description]"/>
   <IconUrl DefaultValue="https://localhost:8443/images/icon-32.png"/>
   <HighResolutionIconUrl DefaultValue="https://localhost:8443/images/hi-res-icon.png"/>
   <Hosts>
@@ -19,13 +19,11 @@
   <FormSettings>
     <Form xsi:type="ItemRead">
       <DesktopSettings>
-        <SourceLocation DefaultValue="https://localhost:8443/appread/home/home.html"/>
-        <RequestedHeight>250</RequestedHeight>
-      </DesktopSettings>
-    </Form>
-    <Form xsi:type="ItemEdit">
-      <DesktopSettings>
-        <SourceLocation DefaultValue="https://localhost:8443/appcompose/home/home.html"/>
+        <!-- NOTE: Just reusing the read taskpane page that is invoked by the button
+             on the ribbon in clients that support add-in commands. You can
+             use a completely different page if desired -->
+        <SourceLocation DefaultValue="https://localhost:8443/FunctionFile/Functions.html"/>
+        <RequestedHeight>450</RequestedHeight>
       </DesktopSettings>
     </Form>
   </FormSettings>
@@ -39,91 +37,40 @@
     <Hosts>
       <Host xsi:type="MailHost">
         <DesktopFormFactor>
-          <FunctionFile resid="funcFile"/>
+          <FunctionFile resid="functionFile"/>
           <ExtensionPoint xsi:type="MessageReadCommandSurface">
             <OfficeTab id="TabDefault">
               <Group id="msgReadCmdGroup">
                 <Label resid="groupLabel"/>
-                <Control xsi:type="Button" id="msgReadPaneButton">
-                  <Label resid="msgReadPaneButtonLabel"/>
+                <Control xsi:type="Button" id="stampFunctionButton">
+                  <Label resid="funcStampButtonLabel" />
                   <Supertip>
-                    <Title resid="msgReadPaneButtonTitle"/>
-                    <Description resid="msgReadPaneButtonDesc"/>
+                    <Title resid="funcStampSuperTipTitle" />
+                    <Description resid="funcStampSuperTipDescription" />
                   </Supertip>
                   <Icon>
-                    <bt:Image size="16" resid="icon-16"/>
-                    <bt:Image size="32" resid="icon-32"/>
-                    <bt:Image size="80" resid="icon-80"/>
-                  </Icon>
-                  <Action xsi:type="ShowTaskpane">
-                    <SourceLocation resid="readPaneUrl"/>
-                  </Action>
-                </Control>
-              </Group>
-            </OfficeTab>
-          </ExtensionPoint>
-          <ExtensionPoint xsi:type="MessageComposeCommandSurface">
-            <OfficeTab id="TabDefault">
-              <Group id="msgComposeCmdGroup">
-                <Label resid="groupLabel"/>
-                <Control xsi:type="Button" id="msgComposeGetSubject">
-                  <Label resid="getSubjectLabel"/>
-                  <Supertip>
-                    <Title resid="getSubjectTitle"/>
-                    <Description resid="getSubjectDesc"/>
-                  </Supertip>
-                  <Icon>
-                    <bt:Image size="16" resid="icon-16"/>
-                    <bt:Image size="32" resid="icon-32"/>
-                    <bt:Image size="80" resid="icon-80"/>
+                    <bt:Image size="16" resid="icon-16" />
+                    <bt:Image size="32" resid="icon-32" />
+                    <bt:Image size="80" resid="icon-80" />
                   </Icon>
                   <Action xsi:type="ExecuteFunction">
-                    <FunctionName>getSubject</FunctionName>
+                    <FunctionName>stamp</FunctionName>
                   </Action>
                 </Control>
-                <Control xsi:type="Menu" id="msgComposeMenu">
-                  <Label resid="menuLabel"/>
+                <Control xsi:type="Button" id="proveFunctionButton">
+                  <Label resid="funcProveButtonLabel" />
                   <Supertip>
-                    <Title resid="menuTitle"/>
-                    <Description resid="menuDescription"/>
+                    <Title resid="funcProveSuperTipTitle" />
+                    <Description resid="funcProveSuperTipDescription" />
                   </Supertip>
                   <Icon>
-                    <bt:Image size="16" resid="icon-16"/>
-                    <bt:Image size="32" resid="icon-32"/>
-                    <bt:Image size="80" resid="icon-80"/>
+                    <bt:Image size="16" resid="icon-16" />
+                    <bt:Image size="32" resid="icon-32" />
+                    <bt:Image size="80" resid="icon-80" />
                   </Icon>
-                  <Items>
-                    <Item id="msgComposeSetSubject">
-                      <Label resid="setSubjectLabel"/>
-                      <Supertip>
-                        <Title resid="setSubjectTitle"/>
-                        <Description resid="setSubjectDesc"/>
-                      </Supertip>
-                      <Icon>
-                        <bt:Image size="16" resid="icon-16"/>
-                        <bt:Image size="32" resid="icon-32"/>
-                        <bt:Image size="80" resid="icon-80"/>
-                      </Icon>
-                      <Action xsi:type="ExecuteFunction">
-                        <FunctionName>setSubject</FunctionName>
-                      </Action>
-                    </Item>
-                    <Item id="msgComposeAddRecip">
-                      <Label resid="addRecipLabel"/>
-                      <Supertip>
-                        <Title resid="addRecipTitle"/>
-                        <Description resid="addRecipDesc"/>
-                      </Supertip>
-                      <Icon>
-                        <bt:Image size="16" resid="icon-16"/>
-                        <bt:Image size="32" resid="icon-32"/>
-                        <bt:Image size="80" resid="icon-80"/>
-                      </Icon>
-                      <Action xsi:type="ExecuteFunction">
-                        <FunctionName>addToRecipients</FunctionName>
-                      </Action>
-                    </Item>
-                  </Items>
+                  <Action xsi:type="ExecuteFunction">
+                    <FunctionName>prove</FunctionName>
+                  </Action>
                 </Control>
               </Group>
             </OfficeTab>
@@ -138,28 +85,20 @@
         <bt:Image id="icon-80" DefaultValue="https://localhost:8443/images/icon-80.png"/>
       </bt:Images>
       <bt:Urls>
-        <bt:Url id="funcFile" DefaultValue="https://localhost:8443/FunctionFile/Functions.html"/>
-        <bt:Url id="readPaneUrl" DefaultValue="https://localhost:8443/appread/home/home.html"/>
+        <bt:Url id="functionFile" DefaultValue="https://localhost:8443/FunctionFile/Functions.html"/>
       </bt:Urls>
       <bt:ShortStrings>
-        <bt:String id="groupLabel" DefaultValue="Sample Add-in"/>
-        <bt:String id="msgReadPaneButtonLabel" DefaultValue="See message details"/>
-        <bt:String id="msgReadPaneButtonTitle" DefaultValue="See message details"/>
-        <bt:String id="setSubjectLabel" DefaultValue="Set subject"/>
-        <bt:String id="setSubjectTitle" DefaultValue="Set subject"/>
-        <bt:String id="getSubjectLabel" DefaultValue="Get subject"/>
-        <bt:String id="getSubjectTitle" DefaultValue="Get subject"/>
-        <bt:String id="addRecipLabel" DefaultValue="Add recipient"/>
-        <bt:String id="addRecipTitle" DefaultValue="Add recipient"/>
-        <bt:String id="menuLabel" DefaultValue="Modify message"/>
-        <bt:String id="menuTitle" DefaultValue="Modify message"/>
+        <bt:String id="groupLabel" DefaultValue="Stampery Add-in"/>
+
+        <bt:String id="funcStampButtonLabel" DefaultValue="Stamp" />
+        <bt:String id="funcStampSuperTipTitle" DefaultValue="Stamp" />
+
+        <bt:String id="funcProveButtonLabel" DefaultValue="Prove" />
+        <bt:String id="funcProveSuperTipTitle" DefaultValue="Prove" />
       </bt:ShortStrings>
       <bt:LongStrings>
-        <bt:String id="msgReadPaneButtonDesc" DefaultValue="Opens a task pane showing the subject and sender of the currently selected message"/>
-        <bt:String id="setSubjectDesc" DefaultValue="Sets the subject to 'Hello World!'"/>
-        <bt:String id="getSubjectDesc" DefaultValue="Gets the current subject and displays it in the info bar"/>
-        <bt:String id="addRecipDesc" DefaultValue="Add yourself to the recipient list (the To line for messages, the Required attendees line for appointments)"/>
-        <bt:String id="menuDescription" DefaultValue="Expand this menu to set this subject or add yourself to the To line."/>
+        <bt:String id="funcStampSuperTipDescription" DefaultValue="Stamp" />
+        <bt:String id="funcProveSuperTipDescription" DefaultValue="Prove" />
       </bt:LongStrings>
     </Resources>
   </VersionOverrides>
