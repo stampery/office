@@ -1,11 +1,15 @@
 'use strict';
 
-var express = require('express');
-var router = express.Router();
-var Stampery = require('stampery');
+const express = require('express');
+const router = express.Router();
+const bodyParser = require('body-parser')
+const uuidV4 = require('uuid/v4');
+const Stampery = require('stampery');
 
-var development = process.env.NODE_ENV !== 'production';
-var stamperyToken = process.env.STAMPERY_TOKEN;
+const development = process.env.NODE_ENV !== 'production';
+const stamperyToken = process.env.STAMPERY_TOKEN;
+
+var proofsDict = {}
 
 if (!stamperyToken) {
   console.error('Environment variable STAMPERY_TOKEN must be set before running!');
@@ -21,13 +25,56 @@ stampery.on('proof', function (hash, proof) {
   stampery.prove(hash, proof, function (valid) {
     console.log('Proof validity:', valid);
   });
+  var prev_proof = proofsDict[hash];
+  if (!prev_proof)
+    prev_proof = {eth: null, btc: null};
+
+  prev_proof[[null, 'btc', 'eth'][Math.abs(proof.anchor.chain)]] = proof;
 });
 
 stampery.on('ready', function () {
   stampery.hash('The piano has been drinking', function (hash) {
     console.log(hash);
-    //stampery.stamp(hash);
   });
+});
+
+router.use(bodyParser.urlencoded({extended: true}));
+
+router.post('/stamp', function (req, res) {
+  var hash = req.body.hash;
+
+  // Throw error 400 if no hash
+  if (!hash)
+    return res.status(400).send('No Hash Specified');
+
+  // Transform hash to upper case (Stampery backend preferes them this way)
+  hash = hash.toUpperCase()
+
+  // Throw error 422 if hash is malformed
+  var re = /^[A-F0-9]{128}$/;
+  if (!(re.test(hash)))
+    return res.status(422).send('Malformed Hash');
+
+  // Perform actual stamping and return success or error
+  if (stampery.stamp(hash)) {
+    // Create an entry for hash in proofsDict
+    proofsDict[hash] = {eth: null, btc: null};
+    res.send(hash);
+  }  else {
+    res.status(503).send('Stamping Failed');
+  }
+});
+
+router.get('/proofs/:hash', function (req, res) {
+  var hash = req.params.hash;
+
+  // Check if stamp exists
+  if (!(hash in proofsDict))
+    return res.status(404).send('Stamp Not Found');
+
+  var proofs = proofsDict[hash];
+
+  res.send(proofs);
 });
 
 router.get('/ping', function (req, res) {
