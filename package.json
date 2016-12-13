@@ -2,8 +2,7 @@
   "name": "officeblock",
   "version": "0.1.0",
   "scripts": {
-    "start": "node server.js",
-    "postinstall": "bower install"
+    "start": "node server.js"
   },
   "devDependencies": {
     "chalk": "^1.1.1",

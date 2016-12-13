@@ -194,13 +194,9 @@ gulp.task('dist-remove', function () {
  */
 gulp.task('dist-copy-files', function () {
     return gulp.src([
-        './app*/**/*',
-        './bower_components/**/*',
-        './content/**/*',
+        './FunctionFile/**/*',
         './images/**/*',
-        './scripts/**/*',
         './manifest-*.xml',
-        './index.html',
         './package.json'
     ], { base: './' }).pipe(gulp.dest(config.release));
 });
