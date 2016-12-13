@@ -157,7 +157,8 @@ function _prove(event) {
     if (proof) {
       // showMessage('Transaction found', 'icon-16', event);
       checkSiblings(hash, proof.siblings, proof.root, function (validity) {
-          showMessage('Valid: ' + validity, 'icon-16', event);
+          var chain = [null, 'Bitcoin', 'Ethereum'][Math.abs(proof.anchor.chain)];
+          showMessage('Valid ' + chain + ' proof: ' + validity, 'icon-16', event);
       });
     } else {
       showMessage('Still working on it..', 'icon-16', event);
