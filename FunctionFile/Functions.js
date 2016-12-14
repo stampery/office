@@ -1,32 +1,13 @@
 // Copyright (c) Microsoft. All rights reserved. Licensed under the MIT license.
 // See full license at the bottom of this file.
 
-var _mailbox = null;
-var _customProperties = null;
-var _initialized = false;
-var _queuedOperation = null;
-
 // The initialize function is required for all add-ins.
 Office.initialize = function () {
-  _mailbox = Office.context.mailbox;
-  _mailbox.item.loadCustomPropertiesAsync(function (result) {
-    if (result.status === Office.AsyncResultStatus.Failed) {
-      showMessage(result.error);
-    }
-    else {
-      // Successfully loaded custom properties,
-      // can get them from the result argument.
-      _customProperties = result.value;
-      _initialized = true;
-      if (_queuedOperation) {
-        _queuedOperation[0](_queuedOperation[1]);
-      }
-    }
-  });
 };
 
 // If loaded outside of Office, mock the Office object for easier testing
 if (window.self === window.top) {
+  var dummyMailBody = 'Dummy mail body with random number: ' + Math.random();
   window.onload = function () {
     window.Office = {};
     Office.AsyncResultStatus = {
@@ -40,7 +21,7 @@ if (window.self === window.top) {
             getAsync: function (dummy, options, callback) {
               callback({
                 status: Office.AsyncResultStatus.Succeeded,
-                value: 'Dummy mail body'
+                value: dummyMailBody
               });
             }
           },
@@ -53,20 +34,6 @@ if (window.self === window.top) {
         }
       }
     };
-    var _savedProperties = {};
-    _customProperties = {
-      set: function (name, value) {
-        _savedProperties[name] = value;
-      },
-      get: function (name) {
-        return _savedProperties[name];
-      },
-      saveAsync: function (callback) {
-        callback({
-          status: Office.AsyncResultStatus.Succeeded
-        });
-      }
-    };
 
     window.dummyEvent = {
       completed: function () {}
@@ -75,93 +42,84 @@ if (window.self === window.top) {
     testMarkup += '<button onclick="prove(dummyEvent)">Prove</button>';
     testMarkup += '<div id="notification"></div>';
     document.body.innerHTML = testMarkup;
-
-    _initialized = true;
   };
 }
 
-function postHash(body, callback) {
-  var xhr = new XMLHttpRequest();
-  xhr.open('POST', '/api/stamp');
-  xhr.setRequestHeader('Content-Type', 'application/json');
-  xhr.onreadystatechange = function () {
-    if (xhr.readyState == 4 && xhr.status == 200) {
-      callback(JSON.parse(xhr.responseText));
-    }
-  };
-  xhr.send(JSON.stringify(body));
-}
-
-function getProof(hash, callback) {
-  var xhr = new XMLHttpRequest();
-  xhr.open('GET', '/api/proofs/' + hash);
-  xhr.onreadystatechange = function () {
-    if (xhr.readyState == 4 && xhr.status == 200) {
-      callback(JSON.parse(xhr.responseText));
-    }
-  };
-  xhr.send();
-}
-
-function stamp(event) {
-  if (!_initialized) {
-    _queuedOperation = [_stamp, event];
-  } else {
-    _stamp(event);
-  }
-}
-
-function _stamp(event) {
+function hashMail(item, callback) {
   Office.context.mailbox.item.body.getAsync('text', {}, function (result) {
     if (result.status === Office.AsyncResultStatus.Failed) {
       showMessage(result.error);
       return;
     }
     var body = result.value;
-    console.log('Mail body: ' + body);
     var hash = keccak_512(body);
+    callback(hash.toUpperCase());
+  });
+}
+
+function handleRequest(xhr, body, callback) {
+  xhr.onreadystatechange = function () {
+    if (xhr.readyState === 4) {
+      if  (xhr.status === 200) {
+        callback(JSON.parse(xhr.responseText));
+      } else {
+        callback({
+          error: 'Request status: ' + xhr.status
+        });
+      }
+    }
+  };
+  xhr.onerror = function () {
+    callback({
+      error: 'Request error'
+    });
+  };
+  xhr.send(body && JSON.stringify(body) || null);
+}
+
+function postHash(hash, callback) {
+  var xhr = new XMLHttpRequest();
+  xhr.open('POST', '/api/stamp');
+  xhr.setRequestHeader('Content-Type', 'application/json');
+  handleRequest(xhr, hash, callback);
+}
+
+function getProof(hash, callback) {
+  var xhr = new XMLHttpRequest();
+  xhr.open('GET', '/api/proofs/' + hash);
+  handleRequest(xhr, null, callback);
+}
+
+function stamp(event) {
+  hashMail(Office.context.mailbox.item, function (hash) {
     postHash({ hash: hash }, function (response) {
-      _customProperties.set('stampery-hash', response.result);
-      _customProperties.saveAsync(function (result) {
-        if (result.status === Office.AsyncResultStatus.Failed) {
-          showMessage(result.error);
-        } else {
-          showMessage('Successfully stamped', event);
-        }
-      });
+      if (response.error) {
+        showMessage(response.error, event);
+      } else {
+        showMessage('Successfully stamped', event);
+      }
     });
   });
 }
 
 function prove(event) {
-  if (!_initialized) {
-    _queuedOperation = [_prove, event];
-  } else {
-    _prove(event);
-  }
-}
-
-function _prove(event) {
-  var hash = _customProperties.get('stampery-hash');
-  if (!hash) {
-    showMessage('No UUID found from properties!', event);
-    return;
-  }
-  getProof(hash, function (response) {
-    if (response.error) {
-      showMessage(response.error);
-      return;
-    }
-    var result = response.result;
-    proof = result.btc || result.eth;
-    if (proof) {
-      checkSiblings(hash, proof.siblings, proof.root, function (validity) {
+  hashMail(Office.context.mailbox.item, function (hash) {
+    getProof(hash, function (response) {
+      if (response.error) {
+        showMessage(response.error);
+        return;
+      }
+      var result = response.result;
+      proof = result.btc || result.eth;
+      if (proof) {
+        checkSiblings(hash, proof.siblings, proof.root, function (validity) {
           var chain = [null, 'Bitcoin', 'Ethereum'][Math.abs(proof.anchor.chain)];
           showMessage('Valid ' + chain + ' proof: ' + validity, event);
-      });
-    } else {
-      showMessage('Still working on it..', event);
-    }
+        });
+      } else {
+        showMessage('Still working on it..', event);
+      }
+    });
   });
 }
 
@@ -177,9 +135,9 @@ function checkSiblings(hash, siblings, root, cb) {
 }
 
 function merkleMixer(a, b) {
-    var commuted = a > b && a + b || b + a;
-    var hash = keccak_512(commuted).toUpperCase();
-    return hash;
+  var commuted = a > b && a + b || b + a;
+  var hash = keccak_512(commuted).toUpperCase();
+  return hash;
 }
 
 function showMessage(message, event) {
@@ -193,14 +151,6 @@ function showMessage(message, event) {
       event.completed();
     }
   });
-}
-
-function setSubject(event) {
-  prove(event);
-}
-
-function getSubject(event) {
-  stamp(event);
 }
 
 /*
