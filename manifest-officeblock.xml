@@ -4,8 +4,8 @@
   <Version>1.0.0.0</Version>
   <ProviderName>[Provider name]</ProviderName>
   <DefaultLocale>en-US</DefaultLocale>
-  <DisplayName DefaultValue="Stampery add-in"/>
-  <Description DefaultValue="Stampery add-in description]"/>
+  <DisplayName DefaultValue="Stampery for Outlook"/>
+  <Description DefaultValue="Certify any email by leveraging the power of the blockchain."/>
   <IconUrl DefaultValue="https://localhost:8443/images/icon-32.png"/>
   <HighResolutionIconUrl DefaultValue="https://localhost:8443/images/hi-res-icon.png"/>
   <Hosts>
@@ -88,17 +88,17 @@
         <bt:Url id="functionFile" DefaultValue="https://localhost:8443/FunctionFile/Functions.html"/>
       </bt:Urls>
       <bt:ShortStrings>
-        <bt:String id="groupLabel" DefaultValue="Stampery Add-in"/>
+        <bt:String id="groupLabel" DefaultValue="Stampery"/>
 
-        <bt:String id="funcStampButtonLabel" DefaultValue="Stamp" />
-        <bt:String id="funcStampSuperTipTitle" DefaultValue="Stamp" />
+        <bt:String id="funcStampButtonLabel" DefaultValue="Certify" />
+        <bt:String id="funcStampSuperTipTitle" DefaultValue="Certify" />
 
-        <bt:String id="funcProveButtonLabel" DefaultValue="Prove" />
-        <bt:String id="funcProveSuperTipTitle" DefaultValue="Prove" />
+        <bt:String id="funcProveButtonLabel" DefaultValue="Verify" />
+        <bt:String id="funcProveSuperTipTitle" DefaultValue="Verify" />
       </bt:ShortStrings>
       <bt:LongStrings>
-        <bt:String id="funcStampSuperTipDescription" DefaultValue="Stamp" />
-        <bt:String id="funcProveSuperTipDescription" DefaultValue="Prove" />
+        <bt:String id="funcStampSuperTipDescription" DefaultValue="Certify this email using Stampery" />
+        <bt:String id="funcProveSuperTipDescription" DefaultValue="Verify the validaty of the Stampery proof for this document" />
       </bt:LongStrings>
     </Resources>
   </VersionOverrides>
