@@ -35,3 +35,24 @@ To test that the REST API is accessible and working, you can issue a request to 
 $ curl https://localhost:8443/api/ping
 6180DAB92AB0107FF5FBF55950AEB2A1F2CFFA287A213834CA7087F2276E017AD1774E4BC99A1FEFCEADF3B5507030730BFA92EAEFAD49FC4C3683AE6E182614
 ```
+## Deployment
+
+Run the gulp dist task and provide the URL behind which you are deploying, for example:
+
+```
+$ gulp dist --url https://stampery-web-app.azurewebsites.net/
+```
+
+Above command rewrites the manifest to point to the correct resources.
+
+The result is a dist folder that you can push to your hosting environment, for example:
+
+```
+$ cd dist
+# Below in case you want to build the dependencies locally
+$ npm install --production
+$ git init .
+$ git add *
+$ git commit -m "Deployment"
+$ git push https://stampery-web-app.scm.azurewebsites.net:443/stampery-web-app.git master
+```
