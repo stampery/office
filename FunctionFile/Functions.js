@@ -14,6 +14,11 @@ if (window.self === window.top) {
       Succeeded: 0,
       Failed: 1
     };
+    Office.MailboxEnums = {
+      ItemNotificationMessageType: {
+        InformationalMessage: 'informationalMessage'
+      }
+    };
     Office.context = {
       mailbox: {
         item: {
@@ -28,7 +33,9 @@ if (window.self === window.top) {
           notificationMessages: {
             replaceAsync: function (dummy, data, callback) {
               document.getElementById('notification').innerHTML = data.message;
-              callback();
+              callback({
+                status: Office.AsyncResultStatus.Succeeded
+              });
             }
           }
         }
@@ -141,12 +148,15 @@ function merkleMixer(a, b) {
 }
 
 function showMessage(message, event) {
-  Office.context.mailbox.item.notificationMessages.replaceAsync('msg', {
-    type: 'informationalMessage',
+  Office.context.mailbox.item.notificationMessages.replaceAsync('stampery-notifications-id', {
+    type: Office.MailboxEnums.ItemNotificationMessageType.InformationalMessage,
     icon: 'icon-16',
     message: message,
-    persistent: false
+    persistent: true
   }, function (result) {
+    if (result.status === Office.AsyncResultStatus.Failed) {
+      showMessage('Error when showing a notification', event);
+    }
     if (event) {
       event.completed();
     }
