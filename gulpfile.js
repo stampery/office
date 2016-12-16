@@ -197,7 +197,9 @@ gulp.task('dist-copy-files', function () {
         './FunctionFile/**/*',
         './images/**/*',
         './manifest-*.xml',
-        './package.json'
+        './package.json',
+        './server.js',
+        './server/**/*'
     ], { base: './' }).pipe(gulp.dest(config.release));
 });
 
@@ -212,8 +214,7 @@ gulp.task('dist-minify', ['dist-minify-js', 'dist-minify-css'], function () {
  */
 gulp.task('dist-minify-js', function () {
     gulp.src([
-        './app*/**/*.js',
-        './scripts/**/*', '!./scripts/MicrosoftAjax.js'
+        './FunctionFile/**/*.js'
     ], { base: './' })
         .pipe($.uglify())
         .pipe(gulp.dest(config.release));
@@ -249,7 +250,6 @@ gulp.task('dist-minify-css', function () {
  */
 gulp.task('dist', function () {
     runSequence(
-        ['dist-remove'],
         ['dist-copy-files'],
         ['replace-url'],
         ['dist-minify']
