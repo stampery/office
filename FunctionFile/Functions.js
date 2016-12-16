@@ -105,7 +105,7 @@ function showMessage(message, event) {
     type: Office.MailboxEnums.ItemNotificationMessageType.InformationalMessage,
     icon: 'icon-16',
     message: message,
-    persistent: true
+    persistent: false
   }, function (result) {
     if (result.status === Office.AsyncResultStatus.Failed) {
       showMessage('Error when showing a notification', event);
