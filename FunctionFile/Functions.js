@@ -5,6 +5,9 @@
 Office.initialize = function () {
 };
 
+// Buffer-handling library shorthand
+Buffer = buffer.Buffer;
+
 function hashMail(item, callback) {
   Office.context.mailbox.item.body.getAsync('text', {}, function (result) {
     if (result.status === Office.AsyncResultStatus.Failed) {
@@ -12,7 +15,7 @@ function hashMail(item, callback) {
       return;
     }
     var body = result.value;
-    var hash = sha_256(body);
+    var hash = sha256(body);
     callback(hash.toUpperCase());
   });
 }
@@ -65,39 +68,47 @@ function stamp(event) {
 function prove(event) {
   hashMail(Office.context.mailbox.item, function (hash) {
     getProof(hash, function (response) {
-      if (response.error) {
-        showMessage(response.error);
-        return;
+      if (response.error || !response.result) {
+        return showMessage(response.error, event);
       }
-      var result = response.result;
-      proof = result.btc || result.eth;
-      if (proof) {
-        checkSiblings(hash, proof.siblings, proof.root, function (validity) {
-          var chain = [null, 'Bitcoin', 'Ethereum'][Math.abs(proof.anchor.chain)];
-          showMessage('Valid ' + chain + ' proof: ' + validity, event);
-        });
+      var receipts = response.result.receipts;
+      var receipt = [receipts.btc, receipts.eth].find(function (receipt) {
+        return typeof receipt != 'number';
+      });
+      if (receipt) {
+        var hash = new Buffer(receipt.targetHash, 'hex');
+        var validity = checkSiblings(hash, receipt.proof, receipt.merkleRoot);
+        var anchor = receipt.anchors[0];
+        var chain = {'ETHData': 'Ethereum', 'BTCOpReturn': 'Bitcoin'}[anchor.type];
+        var date = new Date(response.result.time);
+        showMessage('The ' + chain + ' blockchain attested the content of this email as of ' + date, event);
       } else {
-        showMessage('Still working on it..', event);
+        showMessage('Still working on it.. (' + receipts.eth + ' seconds left)', event);
       }
     });
   });
 }
 
-function checkSiblings(hash, siblings, root, cb) {
+function checkSiblings(hash, siblings, root) {
   if (siblings.length > 0) {
-    head = siblings.slice(-1);
-    tail = siblings.slice(0, -1);
-    hash = merkleMixer(hash, head);
-    checkSiblings(hash, tail, root, cb);
+    var head = siblings[0];
+    var tail = siblings.slice(1);
+    var hashes = [hash, head.right];
+    if ('left' in head)
+      hashes = [head.left, hash];
+    var hash = merkleMixer(hashes);
+    return checkSiblings(hash, tail, root);
   } else {
-    cb(hash == root);
+    var root = new Buffer(root, 'hex');
+    return root.equals(hash);
   }
 }
 
-function merkleMixer(a, b) {
-  var commuted = a > b && a + b || b + a;
-  var hash = sha_256(commuted).toUpperCase();
-  return hash;
+function merkleMixer(hashes) {
+  var buf = Buffer.concat(hashes.map(function (h) {
+    return Buffer(h, 'hex');
+  }));
+  return new Buffer(sha256(buf), 'hex');
 }
 
 function showMessage(message, event) {
