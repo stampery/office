@@ -12,7 +12,7 @@ function hashMail(item, callback) {
       return;
     }
     var body = result.value;
-    var hash = keccak_512(body);
+    var hash = sha_256(body);
     callback(hash.toUpperCase());
   });
 }
@@ -96,7 +96,7 @@ function checkSiblings(hash, siblings, root, cb) {
 
 function merkleMixer(a, b) {
   var commuted = a > b && a + b || b + a;
-  var hash = keccak_512(commuted).toUpperCase();
+  var hash = sha_256(commuted).toUpperCase();
   return hash;
 }
 
